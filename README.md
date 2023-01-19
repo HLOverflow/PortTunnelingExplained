@@ -26,7 +26,7 @@ This will create an SSH tunnel to relay connection to your host's port 3307 to t
 
 ### Scenario 2:
 - The service of my exploited machine (10.10.1.10) is serving only at lo interface at 127.0.0.1:3306. It does not serve at 0.0.0.0:3306.
-- There is no open SSH server at 0.0.0.0:22. The port is filtered. There is a firewall blocking. 
+- There is *no open* SSH server at 0.0.0.0:22. The port is filtered. There is a firewall blocking. 
 - I have gained of Remote Code Execution on the machine. 
 - There is an SSH client inside the exploited server.
 - I would like to tunnel the service back to my host machine (10.10.1.32)
@@ -44,13 +44,13 @@ tcp        0      0 127.0.0.1:3307          0.0.0.0:*               LISTEN      
 ```
 
 **Explanation:**
-Within the exploited machine, we use the ssh client to connect back to our sshd hosted at our host machine with our set of credentials. 
+Within the exploited machine, we use the ssh client found inside exploited machine to connect back to our sshd hosted at our host machine with our set of credentials. 
 
 The first 3307 refers to opening a local port on your remote machine (my host at 10.10.1.32). 
 The 127.0.0.1:3306 refers to the local host's (exploited) service.
 This will create an SSH tunnel to relay connection to your host's port 3307 to the target service.
 
-The format looks very similar to local port forwarding. TLDR it is the same format except we swap `-L` to `-R` as a reverse connection.
+The format looks very similar to local port forwarding. TLDR, think of it as the same format but we swapped `-L` to `-R` for a reverse connection.
 
 ### Scenario 3:
 - I have exploited a machine (10.10.1.10) that has access to another internal admin network on another network interface eth2 (172.16.1.10).
