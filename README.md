@@ -8,7 +8,7 @@ I keep notes on how port tunneling works, and specify which scenario to deploy w
 - There is an open SSH service at 10.10.1.10:22 or 0.0.0.0:22.
 - I have obtained credentials to the SSH service.
 
-Technique: Local Port Forwarding via SSH.
+Technique #1: Local Port Forwarding via SSH.
 
 ```sh
 (host)# ssh -L 3307:127.0.0.1:3306 username@10.10.1.10
@@ -23,6 +23,29 @@ tcp        0      0 127.0.0.1:3307          0.0.0.0:*               LISTEN      
 **Explanation:**
 The first 3307 refers to opening a local port on your host machine. The 127.0.0.1:3306 refers to the remote host's service.
 This will create an SSH tunnel to relay connection to your host's port 3307 to the target service.
+
+Technique #2: Dynamic port forwarding via SSH to any internal target(including localhost) reachable by jumphost.
+
+```sh
+(host)# tail /etc/proxychains.conf
+...
+[ProxyList]
+socks5  127.0.0.1 8001
+(host)# ssh -D 8001 username@10.10.1.10
+(host)# netstat -antp
+...
+tcp        0      0 127.0.0.1:8001          0.0.0.0:*               LISTEN      31049/ssh
+...
+(host)# proxychains curl -v http://127.0.0.1/
+...
+```
+
+**Explanation:**
+We first edit our proxychains configuration file to set a SOCKS proxy at 127.0.0.1:8001.
+Then, by using SSH dynamic port forwarding, we create a SOCKS proxy at port 8001 with the `-D` option.
+Next, we can process to prefix any CLI commands with proxychains that will route our requests through this SOCKS proxy.
+Note that the Curl command was in fact connecting to the exploited machine's localhost instead of our host's localhost! 
+If you're still confused, refer to Scenario 3.
 
 ### Scenario 2:
 - The service of my exploited machine (10.10.1.10) is serving only at lo interface at 127.0.0.1:3306. It does not serve at 0.0.0.0:3306.
@@ -95,6 +118,8 @@ We first edit our proxychains configuration file to set a SOCKS proxy at 127.0.0
 Then, by using SSH dynamic port forwarding, we create a SOCKS proxy at port 8001 with the `-D` option.
 Next, we can process to prefix any CLI commands with proxychains that will route our requests through this SOCKS proxy and reach the admin panel.
 The benefit of this is that we are no longer limited to a single remote target hardcoded in our Local Port Forwarding. 
+
+`-D` is `-L` but on steroids!
 
 ### Scenario 4: 
 - I have exploited a machine (10.10.1.10) that has access to another internal admin network on another network interface eth2 (172.16.1.10).
