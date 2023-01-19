@@ -102,7 +102,7 @@ The benefit of this is that we are no longer limited to a single remote target h
 - There is *no open* SSH server at 10.10.1.10:22 nor 0.0.0.0:22. The port is filtered. There is a firewall blocking. 
 - I have gained of Remote Code Execution on the machine. 
 - There is an SSH client inside the exploited server.
-- I would like to tunnel the service back to my host machine (10.10.1.32)
+- I would like to tunnel the admin web portal back to my host machine (10.10.1.32)
 
 Technique: Reverse/Remote Port Forwarding via SSH a single internal target back to host.
 
