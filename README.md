@@ -120,8 +120,13 @@ tcp        0      0 172.16.1.100:9877       0.0.0.0:*               LISTEN      
 
 **Explanation:**
 I first start my own host's SSHd. I set a netcat listener at port 9999 to catch a reverse connection back on my host machine (10.10.1.32). 
-Inside my jumphost, I leverage the SSH client found inside to perform a Local Port Forwarding instead. Interesting fact: Local Port Forwarding allows us to set a binding address without requiring any special option being enabled on the jumphost's SSHd configuration unlike Remote Port Forwarding.
+Inside my jumphost, I leverage the SSH client found inside to perform a Local Port Forwarding instead. Interesting fact: Local Port Forwarding allows us to set a binding address without requiring any special option being enabled on the jumphost's SSHd configuration, unlike Remote Port Forwarding.
 I can either set my binding address to 172.16.1.10 or 0.0.0.0. This will create a port 4444 listener on our jumphost as seen in our netstat. I then set the remote address pointing to my host's netcat at 10.10.1.32:9999. We can then exploit the admin web portal to call a reverse connection to our jumphost at 172.16.1.10:4444 which will redirect back to our netcat listener, thus catching a reverse shell. 
 
+#### Why did I not try Reverse/Remote Port Forwarding? 
 
+I have failed to successfully set a binding address via `-R` connecting from my host. The listening port will only bind to 127.0.0.1:4444. This is not good as we cannot use this to catch reverse connection back to this jump host.
+
+I found out the reason why was due to an option not being enabled as documented in the Man page for SSH -R: 
+> By default, TCP listening sockets on the server will be bound to the loopback interface only.  This may be overridden by specifying a bind_address.  An empty bind_address, or the address ‘*’, indicates that the remote socket should listen on all interfaces.  Specifying a remote bind_address will only succeed if the server's GatewayPorts option is enabled (see sshd_config(5))
 
