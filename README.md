@@ -43,7 +43,7 @@ tcp        0      0 127.0.0.1:8001          0.0.0.0:*               LISTEN      
 **Explanation:**
 We first edit our proxychains configuration file to set a SOCKS proxy at 127.0.0.1:8001.
 Then, by using SSH dynamic port forwarding, we create a SOCKS proxy at port 8001 with the `-D` option.
-Next, we can process to prefix any CLI commands with proxychains that will route our requests through this SOCKS proxy.
+Next, we can proceed to prefix any CLI commands with proxychains that will route our requests through this SOCKS proxy.
 Note that the Curl command was in fact connecting to the exploited machine's localhost instead of our host's localhost! 
 If you're still confused, refer to Scenario 3.
 
@@ -116,7 +116,7 @@ tcp        0      0 127.0.0.1:8001          0.0.0.0:*               LISTEN      
 **Explanation:**
 We first edit our proxychains configuration file to set a SOCKS proxy at 127.0.0.1:8001.
 Then, by using SSH dynamic port forwarding, we create a SOCKS proxy at port 8001 with the `-D` option.
-Next, we can process to prefix any CLI commands with proxychains that will route our requests through this SOCKS proxy and reach the admin panel.
+Next, we can proceed to prefix any CLI commands with proxychains that will route our requests through this SOCKS proxy and reach the admin panel.
 The benefit of this is that we are no longer limited to a single remote target hardcoded in our Local Port Forwarding. 
 
 `-D` is `-L` but on steroids!
