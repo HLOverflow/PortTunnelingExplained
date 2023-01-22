@@ -46,7 +46,7 @@ msf6 auxiliary(scanner/portscan/tcp) > run
 [*] 172.16.1.2:           - Scanned 1 of 1 hosts (100% complete)
 [*] Auxiliary module execution completed
 ```
-We can see perform port scan via metasploit module. However, we can further expand this to tools outside of metasploit by setting up a SOCKs proxy.
+We can perform port scan via metasploit module. However, we can further expand this to tools outside of metasploit by setting up a SOCKs proxy.
 
 ```
 msf6 > use auxiliary/server/socks_proxy
