@@ -76,7 +76,7 @@ We have more flexibility with what tools to use with this Socks proxy set up.
 - I found a vulnerability on 172.16.1.2:80
 - I want to get a reverse connection back to my host machine (10.10.1.32) via tunneling through jump host at 172.16.1.10:4444.
 
-Technique: portfwd reverse forwarding
+Technique: portfwd reverse relaying
 
 ```
 msf6 post(multi/manage/sudo) > sessions -i 2
